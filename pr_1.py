@@ -30,6 +30,8 @@ def send_excel() :
 	write_wb = Workbook()
 	write_ws = write_wb.create_sheet('Jan,Feb')
 
+	print(wb.sheetnames)
+
 	write_ws = write_wb.active
 
 
