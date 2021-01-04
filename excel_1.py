@@ -15,10 +15,27 @@ print(y_m_d)
 
 print(now_time.strftime("%Y-%m-%d"))
 '''h_m_s = utc.localize(now_time).astimezone(KST).strftime("%H-%M-%d")'''
-h_m_s = utc.localize(now_time).astimezone(KST)
+h_m_s = utc.localize(now_time).astimezone(KST).strftime("%H:%M:%S")
 
-list_h_m_s.append(utc.localize(now_time).astimezone(KST))
+list_h_m_s.append(datetime.strptime(h_m_s,"%H:%M:%S"))
 
+time_a  = '16:04:00'
+print(list_h_m_s[0])
+
+a_time = datetime.strptime(time_a,"%H:%M:%S")
+
+diff = a_time - list_h_m_s[0] 
+'''
+if diff < 1 :
+ print(list_h_m_s[0])
+
+else :
+ print(a_time)
+'''
+
+print(diff.total_seconds()/60)
+
+print(h_m_s)
 
 print(now_time.strftime("%H:%M:%S"))
 
