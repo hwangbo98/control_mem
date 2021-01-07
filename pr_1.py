@@ -3,9 +3,9 @@ import cv2
 import matplotlib.pyplot as plt
 
 from openpyxl import Workbook
+from datetime import datetime
 
-
-img = cv2.imread('/home/hwangbo1998/img1.png')
+img = cv2.imread('/home/hwangbo1998/qr_y.png')
 
 plt.imshow(img)
 
@@ -33,6 +33,11 @@ def send_excel() :
 	print(wb.sheetnames)
 
 	write_ws = write_wb.active
+	
+	now_time = datetime.now()
 
+	
+	
+	
 
 
