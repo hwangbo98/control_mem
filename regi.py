@@ -25,6 +25,9 @@ def register(data) :
 		pass
 
 	data[account] = password
+	wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)
+	sheet_last = wb.create_sheet(account)
+
 	with open('account.pkl', 'wb') as account_file :
 		pickle.dump(data,account_file)
 	print(account) 
@@ -60,9 +63,18 @@ def time_service(id_info) :
 	print(split_day_time[2])
 	return split_day_time
 
-def handle_excel(id_info) :
+def go_work_excel(id_info,day_time_name_info) : #it is defined go to work example
 	wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)		
-	now_sheet = wb.get_sheet_by_name(id_info)
+	now_sheet = wb.get_sheet_by_name(day_time_name_info[3])
+	day_column = now_sheet['A']
+	for day_day in day_column :
+		count = count + 1
+		if day_day == day_time_name_info[0] :
+			now_sheet.cell(row = 2, column = count).value = day_time_name_info[1]
+
+	wb.save("work_sheet.xlsx")
+	wb.close()
+
 	
 id_pw = dict()
 day_time_name = []
