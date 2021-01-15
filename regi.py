@@ -2,6 +2,7 @@ import getpass
 import pickle
 import os
 import sys
+import csv
 from openpyxl import load_workbook
 from openpyxl import Workbook
 import openpyxl
@@ -25,8 +26,8 @@ def register(data) :
 		pass
 
 	data[account] = password
-	wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)
-	sheet_last = wb.create_sheet(account)
+	#wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)
+	#sheet_last = wb.create_sheet(account)
 
 	with open('account.pkl', 'wb') as account_file :
 		pickle.dump(data,account_file)
@@ -55,27 +56,85 @@ def time_service(id_info) :
 	list_h_m_s = []
 	now_time = datetime.utcnow()
 	timeTostr = utc.localize(now_time).astimezone(KST).strftime("%Y-%m-%d %H:%M:%S")
+	#timeTostr1 = utc.localize(now_time).astimezone(KST).strftime("%H:%M:%S")
 	strToint = datetime.strptime(timeTostr,"%Y-%m-%d %H:%M:%S")
-	split_day_time = strToint.strftime("%Y-%m-%d %H:%M:%S").split()
+	split_day_time = strToint.strftime("%Y-%m-%d %H:%M:%S").split()	
 	print(split_day_time[0])
 	print(split_day_time[1])
 	split_day_time.append(id_info)
 	print(split_day_time[2])
 	return split_day_time
 
-def go_work_excel(id_info,day_time_name_info) : #it is defined go to work example
+def go_work_excel(day_time_name_info) :
+	file_name = day_time_name_info[2] + '.csv'
+	f = open(file_name,'r', encoding ='UTF8') 
+	read_file = csv.reader(f)
+	lines = []
+	for line in read_file :
+		if line[0] == day_time_name_info[0] :
+			line[1] = day_time_name_info[1]
+		lines.append(line)
+	f = open(file_name,'w')
+	wr = csv.writer(f)
+	wr.writerows(lines)
+
+	f.close()
+def leave_office_excel(day_time_name_info) :
+	file_name = day_time_name_info[2] + '.csv'
+	f = open(file_name,'r', encoding = 'UTF8')
+	read_file = csv.reader(f)
+	lines = []
+	for line in read_file :
+		if line[0] == day_time_name_info[0] :
+			line[2] = day_time_name_info[1]
+			go_time = line[0] + " " + line[1]
+			leave_time = line[0] + " "+ line[2]
+			go_strToint = datetime.strptime(go_time, "%Y-%m-%d %H:%M:%S")
+			leave_strToint = datetime.strptime(leave_time, "%Y-%m-%d %H:%M:%S")
+			print(go_strToint)
+			print(leave_strToint)
+			sub_time = leave_strToint - go_strToint
+			print(sub_time)
+			line[3] = sub_time.total_seconds()/60
+		lines.append(line)
+	f = open(file_name,'w')
+	wr = csv.writer(f)
+	wr.writerows(lines)
+	
+	f.close()
+
+'''def go_work_excel(day_time_name_info) : #it is defined go to work example
 	wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)		
-	now_sheet = wb.get_sheet_by_name(day_time_name_info[3])
+	now_sheet = wb.get_sheet_by_name([day_time_name_info[2]])
 	day_column = now_sheet['A']
+	count1 = 0 
 	for day_day in day_column :
-		count = count + 1
+		count1 = count1 + 1
 		if day_day == day_time_name_info[0] :
-			now_sheet.cell(row = 2, column = count).value = day_time_name_info[1]
+			now_sheet.cell(row = 2, column = count1).value = day_time_name_info[1]
+	print(count1)
 
 	wb.save("work_sheet.xlsx")
 	wb.close()
+def leave_office_excel(day_time_name_info) :
+	wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)
+	now_sheet = wb.get_sheet_by_name([day_time_name_info[2]])
+	day_column = now_sheet['A']
+	count2 = 0
+	for day_day in day_column :
+		count2 = count2 + 1
+		if day_day == day_time_name_info[0] :
+			now_sheet.cell(row = 3, column = count2).value = day_time_name_info[1]
 
+	go_work = now_sheet.cell(row = 2, column = count2).value
+	leave_office = now_sheet.cell(row = 3, column = count2).value
+
+	worktime_of_day = leave_office - go_work 
+	now_sheet.cell(row = 4, column = count2).value = worktime_of_day
 	
+	wb.save("work_sheet.xlsx")
+	wb.close()
+'''	
 id_pw = dict()
 day_time_name = []
 filesize = os.path.getsize('account.pkl')
@@ -85,15 +144,32 @@ else :
 	with open('account.pkl', 'rb') as fin :
 		id_pw = pickle.load(fin)
 print("You must choice the number, What do you want?")
+print(id_pw)
 choice = input("1.register 2.login 3.logout " )
 if choice == "1" :
 	id_pw = register(id_pw)
 elif choice == "2" :
 	who_am_i = login(id_pw)
-	answer = int(input("1. go to work 2. leave the office :"))
-	if answer == 1 :
-		day_time_name = time_service(who_am_i)
-	elif answer == 2 :
-		day_time_name = time_service(who_am_i)	
+	if who_am_i == 'admin' :
+		answer_delete = int(input("1. delete member ... "))
+		if answer_delete == 1 :
+			while(1) :
+				name_delete = input("which account do you want to delete? ")
+				if name_delete not in id_pw.keys() or name_delete == 'admin' :
+					print("incorrect ID. You type the correct ID one more!")
+				else :
+					del(id_pw[name_delete])
+					
+					with open('account.pkl', 'wb') as account_file :
+						pickle.dump(id_pw,account_file)
+					break
+	else :
+		answer = int(input("1. go to work 2. leave the office :"))
+		if answer == 1 :
+			day_time_name = time_service(who_am_i)
+			go_work_excel(day_time_name)
+		elif answer == 2 :
+			day_time_name = time_service(who_am_i)	
+			leave_office_excel(day_time_name)
 elif choice == "3" :
 	sys.exit()
