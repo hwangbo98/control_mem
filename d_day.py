@@ -13,24 +13,24 @@ print( "%s day left!" %(delta.days))
 deltaToint = delta.days
 if deltaToint%4 == 0 :
 	day_time = deltaToint//4
-	night_time = deltaToint//4
+	night_time = deltaToint//4 + 1
 	first_night = deltaToint//4
 	free_time = deltaToint//4
 elif deltaToint%4 == 1 : 
-	day_time = deltaToint//4 + 1
-	first_night = deltaToint//4 
-	night_time = deltaToint//4
+	day_time = deltaToint//4 
+	first_night = deltaToint//4 + 1
+	night_time = deltaToint//4 + 1
 	free_time = deltaToint//4
 elif deltaToint%4 == 2 : 
 	day_time = deltaToint//4 + 1
-	first_night = deltaToint//4 
-	night_time = deltaToint//4
-	free_time = deltaToint//4 + 1
+	first_night = deltaToint//4 + 1
+	night_time = deltaToint//4 + 1
+	free_time = deltaToint//4 
 else :
 	day_time = deltaToint//4 + 1
 	first_night = deltaToint//4 + 1
 	night_time = deltaToint//4 + 1
-	free_time = deltaToint//4
+	free_time = deltaToint//4 + 1
 
 print(day_time) 
 print("you have {}nighttime, {}firstnight, {}daytime, {}freetime".format(night_time,first_night,day_time,free_time))
