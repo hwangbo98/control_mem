@@ -11,7 +11,7 @@ from pytz import timezone, utc
 
 def register(data) :
 	
-	x = input("Do you want to register? :")
+	x = input("Do you want to register? : yes or no ")
 	x_lower = x.lower()
 	if x_lower == 'yes':
 		while(1) :
@@ -23,7 +23,7 @@ def register(data) :
 				break
 		
 	else :
-		pass
+		sys.exit()
 
 	data[account] = password
 	#wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)
@@ -67,7 +67,7 @@ def time_service(id_info) :
 
 def go_work_excel(day_time_name_info) :
 	file_name = day_time_name_info[2] + '.csv'
-	f = open(file_name,'r', encoding ='UTF8') 
+	f = open(file_name,'r', encoding = 'cp949') 
 	read_file = csv.reader(f)
 	lines = []
 	for line in read_file :
@@ -81,7 +81,7 @@ def go_work_excel(day_time_name_info) :
 	f.close()
 def leave_office_excel(day_time_name_info) :
 	file_name = day_time_name_info[2] + '.csv'
-	f = open(file_name,'r', encoding = 'UTF8')
+	f = open(file_name,'r', encoding = 'cp949')
 	read_file = csv.reader(f)
 	lines = []
 	for line in read_file :
@@ -102,6 +102,20 @@ def leave_office_excel(day_time_name_info) :
 	wr.writerows(lines)
 	
 	f.close()
+def print_work_record(data) :
+	while(1) :
+		whose_record = input("whose record do you want to see? please type the ID : ")
+		print(data.keys())
+		if whose_record in data.keys() :
+			file_name = whose_record + '.csv'
+			f = open(file_name,'r', encoding ='cp949')
+			read_file = csv.reader(f)
+			for line in read_file :
+				print(line)
+			f.close()
+			break
+		else :
+			print("Wrong ID. Type correctly")
 
 '''def go_work_excel(day_time_name_info) : #it is defined go to work example
 	wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)		
@@ -143,26 +157,37 @@ if filesize == 0 :
 else :	
 	with open('account.pkl', 'rb') as fin :
 		id_pw = pickle.load(fin)
-print("You must choice the number, What do you want?")
+print("You must choice the number, What do you want? ")
 print(id_pw)
+print("If you want to quit or wrong something, type quit() and you will be OK ")
 choice = input("1.register 2.login 3.logout " )
 if choice == "1" :
 	id_pw = register(id_pw)
 elif choice == "2" :
 	who_am_i = login(id_pw)
 	if who_am_i == 'admin' :
-		answer_delete = int(input("1. delete member ... "))
-		if answer_delete == 1 :
+		answer_admin = int(input("1. delete member 2. print out the member's monthly work record. "))
+		if answer_admin == 1 :
 			while(1) :
 				name_delete = input("which account do you want to delete? ")
 				if name_delete not in id_pw.keys() or name_delete == 'admin' :
 					print("incorrect ID. You type the correct ID one more!")
 				else :
-					del(id_pw[name_delete])
+					admin_pw = getpass.getpass("type the admin's password ")
+					yes_or_no = input("if you delete the member, you cannot revive the member yes or no? ")
+					yes_or_no = yes_or_no.lower()
+					if id_pw[who_am_i] == admin_pw and yes_or_no == 'yes' :
+
+						del(id_pw[name_delete])
+						print("delete account succesful")
+						with open('account.pkl', 'wb') as account_file :
+							pickle.dump(id_pw,account_file)
+						break
+					else :
+						print("Wrong Password or you don't want to delete")
 					
-					with open('account.pkl', 'wb') as account_file :
-						pickle.dump(id_pw,account_file)
-					break
+		elif answer_admin == 2 :
+			print_work_record(id_pw)
 	else :
 		answer = int(input("1. go to work 2. leave the office :"))
 		if answer == 1 :
