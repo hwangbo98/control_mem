@@ -1,3 +1,4 @@
+import math
 import getpass
 import pickle
 import os
@@ -57,16 +58,20 @@ def time_service(id_info) :
 	now_time = datetime.utcnow()
 	timeTostr = utc.localize(now_time).astimezone(KST).strftime("%Y-%m-%d %H:%M:%S")
 	#timeTostr1 = utc.localize(now_time).astimezone(KST).strftime("%H:%M:%S")
+	get_month = utc.localize(now_time).astimezone(KST).strftime("%B")
 	strToint = datetime.strptime(timeTostr,"%Y-%m-%d %H:%M:%S")
 	split_day_time = strToint.strftime("%Y-%m-%d %H:%M:%S").split()	
 	print(split_day_time[0])
 	print(split_day_time[1])
 	split_day_time.append(id_info)
+	
+	split_day_time.append(get_month[:3]) #get month name
 	print(split_day_time[2])
+	print(split_day_time[3])
 	return split_day_time
 
 def go_work_excel(day_time_name_info) :
-	file_name = day_time_name_info[2] + '.csv'
+	file_name = day_time_name_info[2] + "_" + day_time_name_info[3] + '.csv'
 	f = open(file_name,'r', encoding = 'cp949') 
 	read_file = csv.reader(f)
 	lines = []
@@ -80,7 +85,7 @@ def go_work_excel(day_time_name_info) :
 
 	f.close()
 def leave_office_excel(day_time_name_info) :
-	file_name = day_time_name_info[2] + '.csv'
+	file_name = day_time_name_info[2] + "_" + day_time_name_info[3] + '.csv'
 	f = open(file_name,'r', encoding = 'cp949')
 	read_file = csv.reader(f)
 	lines = []
@@ -96,6 +101,7 @@ def leave_office_excel(day_time_name_info) :
 			sub_time = leave_strToint - go_strToint
 			print(sub_time)
 			line[3] = sub_time.total_seconds()/60
+			math.trunc(line[3]) #trunc is waste of a decimal num
 		lines.append(line)
 	f = open(file_name,'w')
 	wr = csv.writer(f)
@@ -106,8 +112,10 @@ def print_work_record(data) :
 	while(1) :
 		whose_record = input("whose record do you want to see? please type the ID : ")
 		print(data.keys())
+		
 		if whose_record in data.keys() :
-			file_name = whose_record + '.csv'
+			get_month = time_service(whose_record)
+			file_name = whose_record + "_" + get_month[3] + '.csv'
 			f = open(file_name,'r', encoding ='cp949')
 			read_file = csv.reader(f)
 			for line in read_file :
@@ -116,7 +124,28 @@ def print_work_record(data) :
 			break
 		else :
 			print("Wrong ID. Type correctly")
+def total_time(name_worker) :
+	get_month = time_service(name_worker)
+	file_name = name_worker + "_" + get_month[3] + '.csv'
+	f = open(file_name,'r', encoding ='cp949')
+	read_file = csv.reader(f)
+	times = []
+	count = 0
+	for line in read_file :
+		if count == 0 :
+			pass
+		else :
+			if line[3] == '' :
+				line[3] = 0
+				times.append(line[3])
+			else :
+				times.append(line[3])
+		count += 1
 
+	times = list(map(float,times))
+	print("name_worker work time : %d"%(sum(map(float,times))))	
+	print(times)
+	
 '''def go_work_excel(day_time_name_info) : #it is defined go to work example
 	wb = openpyxl.load_workbook("work_sheet.xlsx",data_only = True)		
 	now_sheet = wb.get_sheet_by_name([day_time_name_info[2]])
@@ -166,7 +195,7 @@ if choice == "1" :
 elif choice == "2" :
 	who_am_i = login(id_pw)
 	if who_am_i == 'admin' :
-		answer_admin = int(input("1. delete member 2. print out the member's monthly work record. "))
+		answer_admin = int(input("1. delete member 2. print out the member's monthly work record. 3. total time of specific member  "))
 		if answer_admin == 1 :
 			while(1) :
 				name_delete = input("which account do you want to delete? ")
@@ -188,6 +217,15 @@ elif choice == "2" :
 					
 		elif answer_admin == 2 :
 			print_work_record(id_pw)
+		elif answer_admin == 3 :
+			while(1) :
+				time_name = input("type the name that what you want to see the monthly total work time ")
+				if time_name in id_pw.keys() :
+					total_time(time_name)
+					break
+				else :
+					print("type one more time! {} doesn't exist".format(time_name))
+
 	else :
 		answer = int(input("1. go to work 2. leave the office :"))
 		if answer == 1 :
